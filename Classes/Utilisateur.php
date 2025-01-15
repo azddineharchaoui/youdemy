@@ -22,17 +22,17 @@
         public function set_id($id){
             $this->id = $id;
         }
-        public function get_fname(){
-            return $this->fname;
+        public function get_nom(){
+            return $this->nom;
         }
-        public function set_fname($fname){
-            $this->fname = $fname;
+        public function set_nom($nom){
+            $this->nom = $nom;
         }
-        public function get_lname(){
-            return $this->lname;
+        public function get_prenom(){
+            return $this->prenom;
         }
-        public function set_lname($lname){
-            $this->lname = $lname;
+        public function set_prenom($prenom){
+            $this->prenom = $prenom;
         }
         public function get_email(){
             return $this->email;
@@ -44,7 +44,7 @@
             return $this->password;
         }
         public function set_password($password){
-            $this->password = password_hash($password, PASSWORD_BCRYPT);
+            $this->password = $password;
         }
         public function get_role_id(){
             return $this->role_id;
@@ -75,19 +75,21 @@
                 if (password_verify($password, $user['password'])) {
                     if($user['statut'] == 'active'){
                     session_start();
-                    $_SESSION['user_id'] = $user['id_user'];
+                    $_SESSION['user_id'] = $user['id_utilisateur'];
                     $_SESSION['role_id'] = $user['id_role'];
                     $_SESSION['user_name'] = $user['nom'];
         
                     if ($_SESSION['role_id'] == 1) {
-                        header("Location: ../Admin/dashboard.php");
+                        header("Location: ./Admin/dashboard.php");
                     } else if ($_SESSION['role_id'] == 2){
-                        header("Location: ../teacher.php");
+                        header("Location: ./enseignantPage.php");
                     } else {
-                        header("Location: ../courses.php");
+                        header("Location: ./allcours.php");
                     }
-                }else {
-
+                }else if ($user['statut'] == 'inactive'){
+                    //sweet alert account inactive
+                } else if ($user['statut'] == 'suspendu'){
+                    // sweet alert account suspended 
                 }
                 } else {
                     echo "<script>alert('Mot de passe incorrect. Veuillez réessayer.');</script>";

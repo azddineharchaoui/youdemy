@@ -12,7 +12,7 @@ CREATE TABLE utilisateurs (
     email VARCHAR(255) NOT NULL UNIQUE, 
     password VARCHAR(255) NOT NULL,
     role_id INT NOT NULL,
-    statut ENUM('active',  'suspendu') DEFAULT 'active',
+    statut ENUM('active', 'inactive', 'suspendu') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (role_id) REFERENCES roles(id_role) ON DELETE CASCADE
 );
@@ -20,19 +20,20 @@ CREATE TABLE utilisateurs (
 CREATE TABLE categories (
     id_categorie INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    description TEXT
 );
 
 CREATE TABLE tags (
     id_tag INT AUTO_INCREMENT PRIMARY KEY,
-    nom VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    nom VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE courses (
     id_course INT AUTO_INCREMENT PRIMARY KEY,
     titre VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
+    image VARCHAR(100),
+    type ENUM('video', 'text'),
     contenu TEXT NOT NULL,
     categorie_id INT,
     enseignant_id INT,

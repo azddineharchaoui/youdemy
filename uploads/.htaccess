@@ -1,0 +1,10 @@
+# uploads/.htaccess
+<FilesMatch ".*">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+<FilesMatch ".*\.(mp4|avi|mov)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
