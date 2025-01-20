@@ -73,7 +73,6 @@
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
                 if (password_verify($password, $user['password'])) {
-                    if($user['statut'] == 'active'){
                     session_start();
                     $_SESSION['user_id'] = $user['id_utilisateur'];
                     $_SESSION['role_id'] = $user['id_role'];
@@ -87,27 +86,12 @@
                     } else {
                         header("Location: ./allcours.php");
                     }
-                }else if ($user['statut'] == 'inactive'){
-                    $_SESSION['isactive'] = false;
-                    header("Location: index.php");
-
-                    echo "<script>alert('VOtre compte est inactive');</script>";
-                } else if ($user['statut'] == 'suspendu'){
-                    $_SESSION['isactive'] = false;
-                    header("Location: index.php");
-
-                    echo "<script>alert('VOtre compte est suspendu');</script>";
-                }
-                } else {
-                    echo "<script>alert('Mot de passe incorrect. Veuillez réessayer.');</script>";
-                    header("Refresh: 0; URL=index.php");
-                }
+                
             } else {
                 echo "<script>alert('Adresse e-mail introuvable. Veuillez vérifier vos informations.');</script>";
                 header("Refresh: 0; URL=index.php");
             }
-        }
-
+        }}  
         public static function logout() {
             session_start();
         

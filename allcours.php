@@ -1,9 +1,28 @@
-<?php 
-    session_start();
-    require_once("Classes/Cours.php");
-    require_once("Classes/Cours_text.php");
-    require_once("Classes/Cours_video.php");
-    $notVisiteur = isset($_SESSION['user_id']);
+<?php
+session_start();
+require_once("Classes/Cours.php");
+require_once("Classes/Cours_text.php");
+require_once("Classes/Cours_video.php");
+$notVisiteur = isset($_SESSION['user_id']);
+
+$coursesPerPage = 6; 
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; 
+$offset = ($page - 1) * $coursesPerPage; 
+
+$courseObj = new Cours_text(null, "", "", "", "", "");
+
+$courses = [];
+$totalCourses = 0;
+
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $courses = $courseObj->rechercherCours($_GET['search'], $coursesPerPage, $offset);
+    $totalCourses = $courseObj->countCoursBySearch($_GET['search']);
+} else {
+    $courses = $courseObj->listerTousCours($coursesPerPage, $offset);
+    $totalCourses = $courseObj->countAllCours();
+}
+
+$totalPages = ceil($totalCourses / $coursesPerPage); // Calcul du nombre total de pages
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -199,18 +218,9 @@
         <!-- Courses Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <?php
-            $courseObj = new Cours_text(null, "", "", "", "", "");
-            
-            $courses = [];
-            if (isset($_GET['search']) && !empty($_GET['search'])) {
-                $courses = $courseObj->rechercherCours($_GET['search']);
-            } else {
-                $courses = $courseObj->listerTousCours();
-            }
-
-            if ($courses && count($courses) > 0) {
-                foreach ($courses as $course) {
-                    ?>
+    if ($courses && count($courses) > 0) {
+        foreach ($courses as $course) {
+            ?>
             <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 <?php if (!empty($course['image_url'])): ?>
                 <div class="w-full h-48 overflow-hidden">
@@ -243,11 +253,39 @@
                 </div>
             </div>
             <?php
-                }
-            } else {
-                echo '<div class="col-span-full text-center text-gray-600">Aucun cours trouvé.</div>';
-            }
-            ?>
+        }
+    } else {
+        echo '<div class="col-span-full text-center text-gray-600">Aucun cours trouvé.</div>';
+    }
+    ?>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex justify-center mt-8">
+            <?php if ($totalPages > 1): ?>
+            <div class="flex space-x-2">
+                <?php if ($page > 1): ?>
+                <a href="?page=<?php echo $page - 1; ?><?php echo isset($_GET['search']) ? '&search=' . htmlspecialchars($_GET['search']) : ''; ?>"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                    Précédent
+                </a>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <a href="?page=<?php echo $i; ?><?php echo isset($_GET['search']) ? '&search=' . htmlspecialchars($_GET['search']) : ''; ?>"
+                    class="px-4 py-2 <?php echo $i == $page ? 'bg-blue-700' : 'bg-blue-500'; ?> text-white rounded-lg hover:bg-blue-600">
+                    <?php echo $i; ?>
+                </a>
+                <?php endfor; ?>
+
+                <?php if ($page < $totalPages): ?>
+                <a href="?page=<?php echo $page + 1; ?><?php echo isset($_GET['search']) ? '&search=' . htmlspecialchars($_GET['search']) : ''; ?>"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                    Suivant
+                </a>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         </div>
     </main>
 

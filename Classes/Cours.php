@@ -56,35 +56,80 @@
             }
             return false;
         }
-        public function rechercherCours($mot) {
+
+        public function countAllCours() {
             try {
                 $pdo = DatabaseConnection::getInstance()->getConnection();
-                $sql = "SELECT * FROM courses WHERE titre LIKE :mot OR description LIKE :mot";
+                $sql = "SELECT COUNT(*) as total FROM courses";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                return $result['total'];
+            } catch (PDOException $e) {
+                echo "Erreur lors du comptage des cours : " . $e->getMessage();
+                return 0;
+            }
+        }
+        
+        public function countCoursBySearch($mot) {
+            try {
+                $pdo = DatabaseConnection::getInstance()->getConnection();
+                $sql = "SELECT COUNT(*) as total FROM courses WHERE titre LIKE :mot OR description LIKE :mot";
                 $stmt = $pdo->prepare($sql);
                 $search = "%$mot%";
                 $stmt->bindParam(':mot', $search);
                 $stmt->execute();
-                
-                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                return $result['total'];
             } catch (PDOException $e) {
-                echo "Erreur lors de la recherche : " . $e->getMessage();
-                return false;
+                echo "Erreur lors du comptage des cours : " . $e->getMessage();
+                return 0;
             }
         }
+
+        public function rechercherCours($mot, $limit = null, $offset = null) {
+    try {
+        $pdo = DatabaseConnection::getInstance()->getConnection();
+        $sql = "SELECT * FROM courses WHERE titre LIKE :mot OR description LIKE :mot";
+        if ($limit !== null) {
+            $sql .= " LIMIT :limit OFFSET :offset";
+        }
+        $stmt = $pdo->prepare($sql);
+        $search = "%$mot%";
+        $stmt->bindParam(':mot', $search);
+        if ($limit !== null) {
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Erreur lors de la recherche : " . $e->getMessage();
+        return false;
+    }
+}
     
-        public function listerTousCours() {
-            try {
-                $pdo = DatabaseConnection::getInstance()->getConnection();
-                $sql = "SELECT * FROM courses ORDER BY created_at DESC";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute();
-                
-                return $stmt->fetchAll(PDO::FETCH_ASSOC);
-            } catch (PDOException $e) {
-                echo "Erreur lors de la récupération des cours : " . $e->getMessage();
-                return false;
-            }
+
+
+public function listerTousCours($limit = null, $offset = null) {
+    try {
+        $pdo = DatabaseConnection::getInstance()->getConnection();
+        $sql = "SELECT * FROM courses ORDER BY created_at DESC";
+        if ($limit !== null) {
+            $sql .= " LIMIT :limit OFFSET :offset";
         }
+        $stmt = $pdo->prepare($sql);
+        if ($limit !== null) {
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Erreur lors de la récupération des cours : " . $e->getMessage();
+        return false;
+    }
+}
         abstract protected function validerContenu($contenu);
         abstract protected function formaterContenu($contenu);
         abstract public function getContenu();

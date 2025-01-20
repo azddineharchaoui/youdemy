@@ -13,11 +13,15 @@ $id_cours = (int)$_GET['id'];
 $pdo = DatabaseConnection::getInstance()->getConnection();
 
 // Récupérer les détails du cours
-$sql = "SELECT c.*, u.nom as enseignant_nom, u.prenom as enseignant_prenom, cat.nom as categorie_nom 
+$sql = "SELECT c.*, u.nom as enseignant_nom, u.prenom as enseignant_prenom, cat.nom as categorie_nom, 
+               GROUP_CONCAT(t.nom SEPARATOR ', ') as tags 
         FROM courses c 
         JOIN utilisateurs u ON c.enseignant_id = u.id_utilisateur 
         LEFT JOIN categories cat ON c.categorie_id = cat.id_categorie
-        WHERE c.id_course = :id";
+        LEFT JOIN course_tags ct ON c.id_course = ct.course_id
+        LEFT JOIN tags t ON ct.tag_id = t.id_tag
+        WHERE c.id_course = :id
+        GROUP BY c.id_course";
 $stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id_cours);
 $stmt->execute();
@@ -155,6 +159,21 @@ if (!$cours) {
                 <p class="text-gray-600 mb-4">
                     <span class="font-semibold">Catégorie:</span>
                     <?php echo htmlspecialchars($cours['categorie_nom']); ?>
+                </p>
+                <?php endif; ?>
+
+                <?php if (!empty($cours['tags'])): ?>
+                <p class="text-gray-600 mb-4">
+                    <span class="font-semibold">Tags:</span>
+                    <?php 
+                        $tags = explode(', ', $cours['tags']);
+                        foreach ($tags as $tag):
+                    ?>
+                    <span
+                        class="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2">
+                        <?php echo htmlspecialchars($tag); ?>
+                    </span>
+                    <?php endforeach; ?>
                 </p>
                 <?php endif; ?>
 

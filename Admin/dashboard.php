@@ -1,6 +1,44 @@
 <?php 
     require_once('../Classes/Categorie.php');
+    require_once('../Classes/Cours.php');
+    require_once('../Classes/Cours_text.php');
+    require_once('../Classes/db.php');
+    session_start();
+    if(!isset($_SESSION['user_id']) || $_SESSION['role_id'] !== 1){
+        header("Location: ../index.php");
+    }
 
+    $pdo = DatabaseConnection::getInstance()->getConnection();
+
+    $coursInstance = new Cours_text(0, '', '', '', null, '');
+    $totalCours = $coursInstance->countAllCours();
+
+    $categoriesDistribution = $pdo->query("
+        SELECT c.nom, COUNT(courses.id_course) AS course_count 
+        FROM categories c 
+        LEFT JOIN courses ON c.id_categorie = courses.categorie_id 
+        GROUP BY c.id_categorie
+    ")->fetchAll(PDO::FETCH_ASSOC);
+
+    $mostPopularCourse = $pdo->query("
+        SELECT courses.titre, COUNT(inscriptions.etudiant_id) AS student_count 
+        FROM courses 
+        LEFT JOIN inscriptions ON courses.id_course = inscriptions.course_id 
+        GROUP BY courses.id_course 
+        ORDER BY student_count DESC 
+        LIMIT 1
+    ")->fetch(PDO::FETCH_ASSOC);
+
+    $topTeachers = $pdo->query("
+        SELECT u.nom, u.prenom, COUNT(DISTINCT i.etudiant_id) AS student_count 
+        FROM utilisateurs u 
+        JOIN courses c ON u.id_utilisateur = c.enseignant_id 
+        LEFT JOIN inscriptions i ON c.id_course = i.course_id 
+        WHERE u.role_id = 2 
+        GROUP BY u.id_utilisateur 
+        ORDER BY student_count DESC 
+        LIMIT 3
+    ")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -154,9 +192,6 @@
             <a class="nav-link" href="#utilisateurs" data-section="utilisateurs">
                 <i class="fa fa-user"></i> Utilisateurs
             </a>
-            <a class="nav-link" href="#cours" data-section="cours">
-                <i class="fas fa-book"></i> Cours
-            </a>
             <a class="nav-link" href="#categories" data-section="categories">
                 <i class="fas fa-tags"></i> Catégories
             </a>
@@ -165,9 +200,7 @@
                 <i class="fas fa-tags"></i> Tags
             </a>
 
-            <a class="nav-link" href="#statistiques" data-section="statistiques">
-                <i class="fas fa-newspaper"></i> Statistiques
-            </a>
+            
         </nav>
     </div>
 
@@ -177,16 +210,70 @@
         <div id="dashboard" class="section-content active">
             <h2 class="mb-4">Dashboard Vue d'ensemble</h2>
             <div class="row">
+                <!-- Total Courses Card -->
                 <div class="col-md-3 mb-4">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Réservations</h5>
-                            <p class="card-text display-6">24</p>
-                            <p class="text-success"><i class="fas fa-arrow-up"></i> +15% cette semaine</p>
+                            <h5 class="card-title">Total des Cours</h5>
+                            <p class="card-text display-6"><?= $totalCours ?></p>
                         </div>
                     </div>
                 </div>
-                <!-- Ajoutez d'autres cartes statistiques similaires -->
+
+                <!-- Most Popular Course Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Cours le plus populaire</h5>
+                            <?php if (!empty($mostPopularCourse)): ?>
+                            <p class="card-text"><?= htmlspecialchars($mostPopularCourse['titre']) ?></p>
+                            <small><?= $mostPopularCourse['student_count'] ?> étudiants inscrits</small>
+                            <?php else: ?>
+                            <p class="card-text">Aucun cours trouvé</p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Category Distribution -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Répartition par Catégorie</h5>
+                            <ul class="list-group">
+                                <?php foreach ($categoriesDistribution as $category): ?>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <?= htmlspecialchars($category['nom']) ?>
+                                    <span class="badge bg-primary rounded-pill"><?= $category['course_count'] ?></span>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top 3 Teachers -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Top 3 Enseignants</h5>
+                            <ul class="list-group">
+                                <?php foreach ($topTeachers as $teacher): ?>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <?= htmlspecialchars($teacher['prenom'] . ' ' . $teacher['nom']) ?>
+                                    <span class="badge bg-success rounded-pill"><?= $teacher['student_count'] ?>
+                                        étudiants</span>
+                                </li>
+                                <?php endforeach; ?>
+                                <?php if (empty($topTeachers)): ?>
+                                <li class="list-group-item">Aucun enseignant trouvé</li>
+                                <?php endif; ?>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -486,10 +573,7 @@
             <!-- Contenu de la section cours -->
         </div>
 
-        <div id="statistiques" class="section-content">
-            <h2>Articles et Statistiques</h2>
-            <!-- Contenu de la section statistiques -->
-        </div>
+       
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

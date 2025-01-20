@@ -1,5 +1,9 @@
-<?php 
-    session_start();
+<?php
+session_start();
+if (isset($_SESSION['error'])) {
+    echo "<script>alert('" . $_SESSION['error'] . "');</script>";
+    unset($_SESSION['error']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -261,6 +265,7 @@
             <div class="text-center mt-8 text-gray-500">© 2025 Youdemy. Tous droits réservés.</div>
         </div>
     </footer>
+    
     <script>
 
 const menuToggle = document.getElementById('menuToggle');

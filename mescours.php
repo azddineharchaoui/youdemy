@@ -3,8 +3,8 @@ session_start();
 require_once("Classes/Etudiant.php");
 require_once("Classes/Cours.php");
 
-// Vérifier si l'utilisateur est connecté et est un étudiant
-if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 3 || $_SESSION['isactive'] == false) {
+// Vérifier si l'utilisateur est connecté et est un etudiant
+if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 3 ) {
     header('Location: index.php');
     exit();
 }
