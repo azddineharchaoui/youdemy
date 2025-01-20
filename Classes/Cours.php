@@ -7,15 +7,54 @@
         protected $description;
         protected $dateCreation;
         protected $type; 
+        protected $image;
     
-        public function __construct($idCours, $titre, $description, $dateCreation) {
+        public function __construct($idCours, $titre, $description, $dateCreation, $image) {
             $this->idCours = $idCours;
             $this->titre = $titre;
             $this->description = $description;
             $this->dateCreation = $dateCreation;
+            $this->image = $image;
         }
         public function get_id() {
             return $this->idCours;
+        }
+
+        protected function validerImage($image) {
+            if ($image['error'] !== UPLOAD_ERR_OK) {
+                return false;
+            }
+
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            $fileInfo = finfo_open(FILEINFO_MIME_TYPE);
+            $detectedType = finfo_file($fileInfo, $image['tmp_name']);
+            finfo_close($fileInfo);
+
+            if (!in_array($detectedType, $allowedTypes)) {
+                return false;
+            }
+
+            if ($image['size'] > 5000000) { // 5MB max
+                return false;
+            }
+
+            return true;
+        }
+
+        protected function sauvegarderImage($image) {
+            $uploadDir = 'uploads/courses/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $extension = pathinfo($image['name'], PATHINFO_EXTENSION);
+            $uniqueName = uniqid() . '.' . $extension;
+            $uploadFile = $uploadDir . $uniqueName;
+
+            if (move_uploaded_file($image['tmp_name'], $uploadFile)) {
+                return $uploadFile;
+            }
+            return false;
         }
         public function rechercherCours($mot) {
             try {
@@ -50,7 +89,7 @@
         abstract protected function formaterContenu($contenu);
         abstract public function getContenu();
 
-        public function ajouterCours() {
+        public function ajouterCours($image = null) {
             try {
                 $contenu = $this->getContenu();
                 if (!$this->validerContenu($contenu)) {
@@ -61,11 +100,22 @@
                     }
                 }
         
+                // Gestion de l'image
+                $image_path = null;
+                if ($image !== null) {
+                    if (!$this->validerImage($image)) {
+                        throw new Exception("L'image n'est pas valide. Formats acceptés : JPEG, PNG, GIF. Taille max : 5MB");
+                    }
+                    
+                    $image_path = $this->sauvegarderImage($image);
+                    if (!$image_path) {
+                        throw new Exception("Erreur lors de la sauvegarde de l'image.");
+                    }
+                }
+        
                 $contenuFormate = $this->formaterContenu($contenu);
-                
                 $pdo = DatabaseConnection::getInstance()->getConnection();
         
-                // Verifier si le titre existe deja
                 $checkSql = "SELECT COUNT(*) FROM courses WHERE titre = :titre";
                 $checkStmt = $pdo->prepare($checkSql);
                 $checkStmt->bindParam(':titre', $this->titre);
@@ -75,14 +125,15 @@
                     throw new Exception("Un cours avec ce titre existe déjà");
                 }
         
-                $sql = "INSERT INTO courses (titre, description, contenu, type, created_at) 
-                        VALUES (:titre, :description, :contenu, :type, NOW())";
+                $sql = "INSERT INTO courses (titre, description, contenu, type, image_url, created_at) 
+                        VALUES (:titre, :description, :contenu, :type, :image_url, NOW())";
                 
                 $stmt = $pdo->prepare($sql);
                 $stmt->bindParam(':titre', $this->titre);
                 $stmt->bindParam(':description', $this->description);
                 $stmt->bindParam(':contenu', $contenuFormate);
                 $stmt->bindParam(':type', $this->type);
+                $stmt->bindParam(':image_url', $image_path);
                 
                 if ($stmt->execute()) {
                     $this->idCours = $pdo->lastInsertId();
@@ -94,7 +145,6 @@
                 return false;
             }
         }
-        
         public function modifierCours($idCours,$titre, $description, $contenu) {
             try {
                 $pdo = DatabaseConnection::getInstance()->getConnection();
@@ -166,7 +216,16 @@
                 return false;
             }
         }
-
+        public static function getCategories() {
+            try {
+                $pdo = DatabaseConnection::getInstance()->getConnection();
+                $sql = "SELECT * FROM categories ORDER BY nom";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute();
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                return [];
+            }
+        }
     }
 ?>
-    

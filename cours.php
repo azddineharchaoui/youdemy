@@ -13,9 +13,10 @@ $id_cours = (int)$_GET['id'];
 $pdo = DatabaseConnection::getInstance()->getConnection();
 
 // Récupérer les détails du cours
-$sql = "SELECT c.*, u.nom as enseignant_nom, u.prenom as enseignant_prenom 
+$sql = "SELECT c.*, u.nom as enseignant_nom, u.prenom as enseignant_prenom, cat.nom as categorie_nom 
         FROM courses c 
         JOIN utilisateurs u ON c.enseignant_id = u.id_utilisateur 
+        LEFT JOIN categories cat ON c.categorie_id = cat.id_categorie
         WHERE c.id_course = :id";
 $stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id_cours);
@@ -115,6 +116,26 @@ if (!$cours) {
         </div>
     </header>
 
+    <?php if (isset($_GET['success'])): ?>
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <strong class="font-bold">Succès!</strong>
+        <span class="block sm:inline">Vous êtes maintenant inscrit à ce cours.</span>
+    </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error'])): ?>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <strong class="font-bold">Erreur!</strong>
+        <span class="block sm:inline">
+            <?php 
+            echo isset($_GET['error']) && $_GET['error'] !== '1' 
+                ? htmlspecialchars($_GET['error']) 
+                : "Une erreur est survenue lors de l'inscription."; 
+            ?>
+        </span>
+    </div>
+    <?php endif; ?>
+
     <div class="max-w-7xl mx-auto px-4 py-6">
         <div class="bg-white shadow rounded-lg p-6">
             <h1 class="text-3xl font-bold mb-4"><?php echo htmlspecialchars($cours['titre']); ?></h1>
@@ -128,6 +149,31 @@ if (!$cours) {
             <div class="prose max-w-none mb-6">
                 <h2 class="text-xl font-semibold mb-2">Description</h2>
                 <p><?php echo nl2br(htmlspecialchars($cours['description'])); ?></p>
+            </div>
+            <div class="prose max-w-none mb-6">
+                <?php if (!empty($cours['categorie_nom'])): ?>
+                <p class="text-gray-600 mb-4">
+                    <span class="font-semibold">Catégorie:</span>
+                    <?php echo htmlspecialchars($cours['categorie_nom']); ?>
+                </p>
+                <?php endif; ?>
+
+                <?php if (isset($_SESSION['user_id']) && $_SESSION['role_id'] == 3): ?>
+                <form action="inscription_cours.php" method="POST" class="mt-4">
+                    <input type="hidden" name="course_id" value="<?php echo $cours['id_course']; ?>">
+                    <button type="submit"
+                        class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                        S'inscrire au cours
+                    </button>
+                </form>
+                <?php elseif (!isset($_SESSION['user_id'])): ?>
+                <div class="mt-4 p-4 bg-gray-100 rounded-lg">
+                    <p class="text-gray-700">Connectez-vous pour vous inscrire à ce cours.</p>
+                    <button id="openLogin" class="mt-2 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
+                        Se connecter
+                    </button>
+                </div>
+                <?php endif; ?>
             </div>
 
             <div class="mb-6">
@@ -144,7 +190,7 @@ if (!$cours) {
                             ];
                             $Type = isset($Types[$extension]) ? $Types[$extension] : 'video/mp4';
                         ?>
-                        <source src="<?php echo $cours['contenu']; ?> " type="<?php echo $Type; ?>">
+                        <source type="<?php echo $Type ; ?>" src="<?php echo $cours['contenu']; ?> ">
                         <p class="text-gray-600 mt-2">Votre navigateur ne supporte pas la lecture de cette vidéo.</p>
                     </video>
                 </div>
@@ -156,6 +202,79 @@ if (!$cours) {
             </div>
         </div>
     </div>
+    <script>
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const navLinks = document.getElementById('navLinks');
+    menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+    const modalBackground = document.getElementById('modalBackground');
+    const loginModal = document.getElementById('loginModal');
+    const registerModal = document.getElementById('registerModal');
+    const openLogin = document.getElementById('openLogin');
+    const openRegister = document.getElementById('openRegister');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    const closeRegisterModal = document.getElementById('closeRegisterModal');
+    const openRegisterFromLogin = document.getElementById('openRegisterFromLogin');
+    const openLoginFromRegister = document.getElementById('openLoginFromRegister');
+    const openRegisterMobile = document.getElementById("openRegisterMobile");
+    const openLoginMobile = document.getElementById("openLoginMobile");
+
+    openLogin.addEventListener('click', () => {
+        modalBackground.classList.remove('hidden');
+        loginModal.classList.remove('hidden');
+        registerModal.classList.add('hidden');
+    });
+
+    openLoginMobile.addEventListener('click', () => {
+        modalBackground.classList.remove('hidden');
+        loginModal.classList.remove('hidden');
+        registerModal.classList.add('hidden');
+    });
+
+    openRegister.addEventListener('click', () => {
+        modalBackground.classList.remove('hidden');
+        registerModal.classList.remove('hidden');
+        loginModal.classList.add('hidden');
+    });
+
+    openRegisterMobile.addEventListener('click', () => {
+        modalBackground.classList.remove('hidden');
+        registerModal.classList.remove('hidden');
+        loginModal.classList.add('hidden');
+    });
+
+
+    closeLoginModal.addEventListener('click', () => {
+        modalBackground.classList.add('hidden');
+        loginModal.classList.add('hidden');
+    });
+
+    closeRegisterModal.addEventListener('click', () => {
+        modalBackground.classList.add('hidden');
+        registerModal.classList.add('hidden');
+    });
+
+    openRegisterFromLogin.addEventListener('click', () => {
+        loginModal.classList.add('hidden');
+        registerModal.classList.remove('hidden');
+    });
+
+    openLoginFromRegister.addEventListener('click', () => {
+        registerModal.classList.add('hidden');
+        loginModal.classList.remove('hidden');
+    });
+
+    modalBackground.addEventListener('click', (e) => {
+        if (e.target === modalBackground) {
+            modalBackground.classList.add('hidden');
+            loginModal.classList.add('hidden');
+            registerModal.classList.add('hidden');
+        }
+    });
+    </script>
+
 </body>
 
 </html>

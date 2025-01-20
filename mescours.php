@@ -4,7 +4,7 @@ require_once("Classes/Etudiant.php");
 require_once("Classes/Cours.php");
 
 // Vérifier si l'utilisateur est connecté et est un étudiant
-if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 3) {
+if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 3 || $_SESSION['isactive'] == false) {
     header('Location: index.php');
     exit();
 }
@@ -147,5 +147,79 @@ $mesCours = $etudiant->getMesCours();
             </div>
         <?php endif; ?>
     </div>
+
+    <script>
+
+const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const navLinks = document.getElementById('navLinks');
+    menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+    const modalBackground = document.getElementById('modalBackground');
+    const loginModal = document.getElementById('loginModal');
+    const registerModal = document.getElementById('registerModal');
+    const openLogin = document.getElementById('openLogin');
+    const openRegister = document.getElementById('openRegister');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    const closeRegisterModal = document.getElementById('closeRegisterModal');
+    const openRegisterFromLogin = document.getElementById('openRegisterFromLogin');
+    const openLoginFromRegister = document.getElementById('openLoginFromRegister');
+    const openRegisterMobile = document.getElementById("openRegisterMobile");
+    const openLoginMobile = document.getElementById("openLoginMobile");
+
+    openLogin.addEventListener('click', () => {
+        modalBackground.classList.remove('hidden');
+        loginModal.classList.remove('hidden');
+        registerModal.classList.add('hidden');
+    });
+
+    openLoginMobile.addEventListener('click', () => {
+        modalBackground.classList.remove('hidden');
+        loginModal.classList.remove('hidden');
+        registerModal.classList.add('hidden');
+    });
+
+    openRegister.addEventListener('click', () => {
+        modalBackground.classList.remove('hidden');
+        registerModal.classList.remove('hidden');
+        loginModal.classList.add('hidden');
+    });
+
+    openRegisterMobile.addEventListener('click', () => {
+        modalBackground.classList.remove('hidden');
+        registerModal.classList.remove('hidden');
+        loginModal.classList.add('hidden');
+    });
+
+
+    closeLoginModal.addEventListener('click', () => {
+        modalBackground.classList.add('hidden');
+        loginModal.classList.add('hidden');
+    });
+
+    closeRegisterModal.addEventListener('click', () => {
+        modalBackground.classList.add('hidden');
+        registerModal.classList.add('hidden');
+    });
+
+    openRegisterFromLogin.addEventListener('click', () => {
+        loginModal.classList.add('hidden');
+        registerModal.classList.remove('hidden');
+    });
+
+    openLoginFromRegister.addEventListener('click', () => {
+        registerModal.classList.add('hidden');
+        loginModal.classList.remove('hidden');
+    });
+
+    modalBackground.addEventListener('click', (e) => {
+        if (e.target === modalBackground) {
+            modalBackground.classList.add('hidden');
+            loginModal.classList.add('hidden');
+            registerModal.classList.add('hidden');
+        }
+    });
+    </script>
 </body>
 </html>

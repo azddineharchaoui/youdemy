@@ -21,9 +21,8 @@ class FileUploader {
         }
 
         if ($file['size'] > $this->maxSize) {
-            throw new Exception("Le fichier est trop volumineux (max 500MB)");
+            throw new Exception("Le fichier est trop volumineux (max 10MB)");
         }
-        echo "test";
         $fileName = uniqid() . '_' . basename($file['name']);
         $targetPath = $this->uploadDir . $fileName;
 

@@ -20,7 +20,9 @@ CREATE TABLE utilisateurs (
 CREATE TABLE categories (
     id_categorie INT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(255) NOT NULL UNIQUE,
-    description TEXT
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
 );
 
 CREATE TABLE tags (
@@ -32,7 +34,7 @@ CREATE TABLE courses (
     id_course INT AUTO_INCREMENT PRIMARY KEY,
     titre VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-    image VARCHAR(100),
+    image_url VARCHAR(100),
     type ENUM('video', 'text'),
     contenu TEXT NOT NULL,
     categorie_id INT,

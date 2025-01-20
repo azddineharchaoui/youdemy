@@ -1,6 +1,7 @@
 <?php 
     require_once('Utilisateur.php');
     require_once('db.php');
+    // session_start();
 
     class Etudiant extends Utilisateur{
         private $status;
@@ -42,6 +43,7 @@
     
                 if ($stmt->execute()) {
                     $this->id = $pdo->lastInsertId();
+                    $_SESSION['isactive'] = true;  
                     return true;
                 }
             } catch (PDOException $e) {

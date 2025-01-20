@@ -2,6 +2,7 @@
     require_once('Utilisateur.php');
     require_once('db.php');
     require_once("fileUploader.php");
+    require_once("Tag.php");
 
     class Enseignant extends Utilisateur{
         private $status;
@@ -54,11 +55,16 @@
             }
         }
 
-        public function creerCours($type, $titre, $description, $contenu, $video_file = null) {
+        
+        
+        
+        public function creerCours($type, $titre, $description, $contenu, $image = null, $video_file = null, $categorie_id) {
             try {
                 if ($this->status !== 'active') {
                     throw new Exception("L'enseignant n'est pas actif et ne peut pas créer de cours");
                 }
+        
+                $image_file = isset($_FILES['course_image']) ? $_FILES['course_image'] : null;
         
                 if ($type === 'video' && isset($video_file)) {
                     $uploader = new FileUploader();
@@ -66,20 +72,38 @@
                 }
         
                 if ($type === 'video') {
-                    $cours = new Cours_video(null, $titre, $description, null, $contenu);
+                    $cours = new Cours_video(null, $titre, $description, date('Y-m-d H:i:s'), $image_file, $contenu);
                 } elseif ($type === 'text') {
-                    $cours = new Cours_text(null, $titre, $description, null, $contenu);
+                    $cours = new Cours_text(null, $titre, $description, date('Y-m-d H:i:s'), $image_file, $contenu);
                 } else {
                     throw new Exception("Type de cours non valide");
                 }
         
-                if ($cours->ajouterCours()) {
+                if ($cours->ajouterCours($image_file)) {
                     $pdo = DatabaseConnection::getInstance()->getConnection();
-                    $sql = "UPDATE courses SET enseignant_id = :enseignant_id WHERE id_course = :id_course";
+                    
+                    // Mettre a jour l enseignant_id et la categorie
+                    $sql = "UPDATE courses SET enseignant_id = :enseignant_id, categorie_id = :categorie_id WHERE id_course = :id_course";
                     $stmt = $pdo->prepare($sql);
+                    $id = $cours->get_id();
                     $stmt->bindParam(':enseignant_id', $this->id);
-                    $stmt->bindParam(':id_course', $cours->get_id());
-                    return $stmt->execute();
+                    $stmt->bindParam(':categorie_id', $categorie_id);
+                    $stmt->bindParam(':id_course', $id);
+                    
+                    if ($stmt->execute()) {
+                        // Gerer les tags si presents
+                        if (isset($_POST['tags']) && is_array($_POST['tags'])) {
+                            $sqlTag = "INSERT INTO course_tags (course_id, tag_id) VALUES (:course_id, :tag_id)";
+                            $stmtTag = $pdo->prepare($sqlTag);
+                            
+                            foreach ($_POST['tags'] as $tag_id) {
+                                $stmtTag->bindParam(':course_id', $id);
+                                $stmtTag->bindParam(':tag_id', $tag_id);
+                                $stmtTag->execute();
+                            }
+                        }
+                        return true;
+                    }
                 }
                 return false;
         

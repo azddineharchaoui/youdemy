@@ -14,12 +14,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
     $type_user = $_POST['type_user'];
-    $status = 'active';
 
     try {
         if ($type_user == '3') {
+            $status = 'active';
             $user = new Etudiant(null, $nom, $prenom, $email, $password, $status);
         } elseif ($type_user == '2') {
+            $status = 'inactive';
             $user = new Enseignant(null, $nom, $prenom, $email, $password, $status);
         } else {
             throw new Exception("Type d'utilisateur non valide");
@@ -31,13 +32,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
             $_SESSION['role_id'] = $user->get_role_id();
             $_SESSION['user_name'] = $user->get_nom();
 
-            if ($_SESSION['role_id'] == 2) {
-                header("Location: ./enseignantPage.php");
-                exit;
-            } else {
-                header("Location: ./allcours.php");
-                exit;
-            }
+            // if ($_SESSION['role_id'] == 2) {
+                header("Location: ./index.php");
+            //     exit;
+            // } else {
+            //     header("Location: ./allcours.php");
+            //     exit;
+            // }
         } else {
             throw new Exception("Échec de l'enregistrement");
         }

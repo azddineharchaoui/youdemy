@@ -1,6 +1,6 @@
 <?php 
     require_once("db.php");
-    abstract class Utilisateur{
+    class Utilisateur{
         protected $id; 
         protected $nom;
         protected $prenom;
@@ -78,6 +78,7 @@
                     $_SESSION['user_id'] = $user['id_utilisateur'];
                     $_SESSION['role_id'] = $user['id_role'];
                     $_SESSION['user_name'] = $user['nom'];
+                    $_SESSION['isactive'] = true;
         
                     if ($_SESSION['role_id'] == 1) {
                         header("Location: ./Admin/dashboard.php");
@@ -87,9 +88,15 @@
                         header("Location: ./allcours.php");
                     }
                 }else if ($user['statut'] == 'inactive'){
-                    //sweet alert account inactive
+                    $_SESSION['isactive'] = false;
+                    header("Location: index.php");
+
+                    echo "<script>alert('VOtre compte est inactive');</script>";
                 } else if ($user['statut'] == 'suspendu'){
-                    // sweet alert account suspended 
+                    $_SESSION['isactive'] = false;
+                    header("Location: index.php");
+
+                    echo "<script>alert('VOtre compte est suspendu');</script>";
                 }
                 } else {
                     echo "<script>alert('Mot de passe incorrect. Veuillez réessayer.');</script>";
