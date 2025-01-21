@@ -18,11 +18,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         } 
         elseif (isset($_POST['edit_tag'])) {
-            $tag = new Tag($_POST['id_tag'], $_POST['nom_tag']);
-            if ($tag->modifierTag($_POST['id_tag'])) {
-                header('Location: dashboard.php#tags');
-                exit;
+            $idTag = $_POST['id_tag'];
+            $nouveauNom = trim($_POST['nom_tag']);
+
+            if (empty($nouveauNom)) {
+                throw new Exception("Le nom du tag ne peut pas être vide");
             }
+
+            $tag = new Tag($idTag, $nouveauNom);
+            if ($tag->modifierTag($idTag)) {
+                $_SESSION['message'] = "Tag modifié avec succès";
+            } else {
+                $_SESSION['error'] = "Erreur lors de la modification du tag";
+            }
+            
         }
         
         elseif (isset($_POST['delete_tag'])) {

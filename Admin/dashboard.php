@@ -200,7 +200,7 @@
                 <i class="fas fa-tags"></i> Tags
             </a>
 
-            
+
         </nav>
     </div>
 
@@ -573,7 +573,7 @@
             <!-- Contenu de la section cours -->
         </div>
 
-       
+
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -651,6 +651,19 @@
 
         // Afficher la section dashboard par défaut
         showSection('dashboard');
+    });
+
+    document.querySelectorAll('.editTagBtn').forEach(button => {
+        button.addEventListener('click', () => {
+            const id = button.getAttribute('data-id');
+            const nom = button.getAttribute('data-nom');
+
+            document.getElementById('editTagId').value = id;
+            document.getElementById('editNomTag').value = nom;
+
+            const editModal = new bootstrap.Modal(document.getElementById('editTagModal'));
+            editModal.show();
+        });
     });
     </script>
 </body>
