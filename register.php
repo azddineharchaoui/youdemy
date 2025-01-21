@@ -32,13 +32,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
             $_SESSION['role_id'] = $user->get_role_id();
             $_SESSION['user_name'] = $user->get_nom();
 
-            // if ($_SESSION['role_id'] == 2) {
-                header("Location: ./index.php");
-            //     exit;
-            // } else {
-            //     header("Location: ./allcours.php");
-            //     exit;
-            // }
+            if ($_SESSION['role_id'] == 2) {
+                header("Location: ./enseignantPage.php");
+                exit;
+            } else {
+                header("Location: ./allcours.php");
+                exit;
+            }
         } else {
             throw new Exception("Échec de l'enregistrement");
         }

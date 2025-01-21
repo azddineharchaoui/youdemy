@@ -46,6 +46,7 @@
                     $this->id = $pdo->lastInsertId();
                     return true;
                 }
+                
             } catch (PDOException $e) {
                 echo "Erreur d'inscription: " . $e->getMessage();
                 return false;

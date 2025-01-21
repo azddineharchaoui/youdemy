@@ -103,7 +103,6 @@ if (isset($_GET['supprimer_cours'])) {
             <ul id="navLinks" class="hidden md:flex space-x-6 text-gray-700">
                 <li><a href="#home" class="hover:text-blue-500">Accueil</a></li>
                 <li><a href="allcours.php" class="hover:text-blue-500">Cours</a></li>
-                <li><a href="mescours.php" class="hover:text-blue-500">Mes Cours</a></li>
             </ul>
             <div class=" md:flex space-x-4">
 

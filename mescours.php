@@ -148,6 +148,24 @@ $mesCours = $etudiant->getMesCours();
         <?php endif; ?>
     </div>
 
+     <!-- Footer -->
+     <footer class="bg-gray-800 text-gray-300 py-10 mt-16">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="text-2xl font-extrabold text-white">Youdemy</div>
+                    <p class="mt-2 text-gray-400">Votre plateforme de cours online.</p>
+                </div>
+                <ul class="flex space-x-4">
+                    <li><a href="#" class="text-gray-400 hover:text-white">Mentions Légales</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white">Politique de Confidentialité</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white">Nous Contacter</a></li>
+                </ul>
+            </div>
+            <div class="text-center mt-8 text-gray-500">© 2025 Youdemy. Tous droits réservés.</div>
+        </div>
+    </footer>
+
     <script>
 
 const menuToggle = document.getElementById('menuToggle');

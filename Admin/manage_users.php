@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("UPDATE utilisateurs SET statut = 'active' WHERE id_utilisateur = ? AND role_id = 3");
             if ($stmt->execute([$user_id])) {
                 $_SESSION['isactive'] = true;
-                $_SESSION['message'] = "L'utilisateur a été débanni avec succès.";
+                $_SESSION['message'] = "L'utilisateur a été debanni avec succes.";
             }
         } catch (PDOException $e) {
             $_SESSION['error'] = "Erreur lors du débannissement de l'utilisateur : " . $e->getMessage();
